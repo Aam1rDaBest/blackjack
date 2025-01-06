@@ -2,7 +2,7 @@ import random
 
 class Deck:
     def __init__(self):
-        self.create_deck()
+        self.cards= self.create_deck()
     
     def create_deck(self):
         suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
