@@ -68,8 +68,18 @@ class BlackjackGame:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_h:  # Hit
                     self.player.add_card_to_hand(self.deck.draw_card())
+                    print(self.player)
+                    # Check hand value
+                    if self.player.hand_value() > 21:
+                        print("Bust! Player loses.")
+                        self.running = False
+                    elif self.player.hand_value() == 21:
+                        print("Blackjack! Player wins.")
+                        self.running = False
+                        
                 elif event.key == pygame.K_s:  # Stand
                     print("Player chose to stand.")
+                    print("Final",self.player)
                     self.running = False
             
             # Detect mouse clicks for the quit button
@@ -108,23 +118,11 @@ class BlackjackGame:
                     print("Deck is empty!")
                     self.running = False
 
-            elif self.action == 's':
-                print("Player chose to stand.")
-                self.running = False
-
-            # Check hand value
-            if self.player.hand_value() > 21:
-                print("Bust! Player loses.")
-                self.running = False
-            elif self.player.hand_value() == 21:
-                print("Blackjack! Player wins.")
-                self.running = False
-
             # Render the screen
             self.draw_screen()
             self.clock.tick(30)  # 30 FPS
         
-        self.determine_winner()
+        #self.determine_winner()
         pygame.quit()
 
     def determine_winner(self):
