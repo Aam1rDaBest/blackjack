@@ -1,4 +1,5 @@
 from .card import Card
+import pygame
 
 class Hand:
     def __init__(self):
@@ -6,6 +7,13 @@ class Hand:
 
     def add_card(self, card):
         self.cards.append(card)
+    
+    def draw_hand(self, screen, x, y):
+        # Draw each card in the hand at a given position (x, y)
+        for index, card in enumerate(self.cards):
+            card_image = card.get_image()
+            card_image = pygame.transform.scale(card_image, (175, 210))
+            screen.blit(card_image, (x + index * 50, y))
 
     def calculate_value(self):
         value = 0
