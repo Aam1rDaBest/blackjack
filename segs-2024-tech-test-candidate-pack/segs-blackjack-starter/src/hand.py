@@ -15,22 +15,25 @@ class Hand:
             card_image = pygame.transform.scale(card_image, (175, 210))
             screen.blit(card_image, (x + index * 50, y))
 
+    def flip_last_card(self):
+        if self.cards:
+            self.cards[-1].flip()
+        
     def calculate_value(self):
         value = 0
         aces = 0
+        
         for card in self.cards:
             if card.rank in ['Jack', 'Queen', 'King']:
                 value += 10
             elif card.rank == 'Ace':
                 aces += 1
                 value += 11  # Assume Ace is 11 initially
+                while value > 21 and aces:
+                    value -= 10
+                    aces -= 1
             else:
                 value += int(card.rank)
-        
-        # Adjust for Aces if value > 21
-        while value > 21 and aces:
-            value -= 10
-            aces -= 1
         
         return value
 
