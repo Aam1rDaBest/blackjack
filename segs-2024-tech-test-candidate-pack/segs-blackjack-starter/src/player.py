@@ -3,6 +3,7 @@ from .hand import Hand
 class Player:
     def __init__(self):
         self.hand = Hand()
+        self.status = 'playing'
 
     def add_card_to_hand(self, card):
         self.hand.add_card(card)
