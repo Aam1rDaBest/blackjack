@@ -14,7 +14,6 @@ class BlackjackGame:
         pygame.display.set_caption("Blackjack Game")
         self.clock = pygame.time.Clock()
         self.running = True
-        self.animating = False
 
         # Game assets
         self.card_back_image = pygame.image.load(os.path.join("assets", "card_back_red.png"))
@@ -26,6 +25,11 @@ class BlackjackGame:
         # Quit button dimensions and position
         self.quit_button_color = (255,0,0)  # Red color for 'X'
         self.quit_button_rect = pygame.Rect(self.screen.get_width() - 60, 20, 60, 40)
+        
+        # Hit and stand buttons
+        self.hit_button_rect = pygame.Rect(self.screen.get_width() - 250, self.screen.get_height() - 190, 150, 50)
+        self.stand_button_rect = pygame.Rect(self.screen.get_width() - 250, self.screen.get_height() - 110, 150, 50)
+        self.buttons_enabled = True
         
         # Game objects
         self.deck = Deck()
@@ -52,39 +56,24 @@ class BlackjackGame:
         step_x = (end_x - start_x) / 20
         step_y = (end_y - start_y) / 20
 
+        # Static background rendering to avoid re-drawing static objects repeatedly
+        background_surface = pygame.Surface(self.screen.get_size())
+        background_surface.fill(self.green_color)
+        self.deck.draw_visual_stack(background_surface, self.card_back_image, start_x, start_y)
+        self.player.hand.draw_hand(background_surface, (self.screen.get_width() - 350) // 2, self.screen.get_height() - 250)
+
         # Animation for moving the card
         for _ in range(20):
-            # Clear the screen
-            self.screen.fill(self.green_color)
-
-            # Draw the deck stack
-            self.deck.draw_visual_stack(self.screen, self.card_back_image, start_x, start_y)
-
-            # Draw the player's hand
-            self.player.hand.draw_hand(self.screen, (self.screen.get_width() - 350) // 2, self.screen.get_height() - 250)
-
-            # Draw the moving card
-            self.screen.blit(card_image, (current_x, current_y))
-
-            # Draw the current hand value
-            font = pygame.font.Font(None, 36)
-            text = font.render(f"Hand Value: {self.player.hand_value()}", True, (255, 255, 255))
-            self.screen.blit(text, (50, 50))
-
-            # Draw the quit button
-            self.draw_quit_button()
-
-            # Update the screen
+            self.screen.blit(background_surface, (0, 0))  # Draw static background
+            self.screen.blit(card_image, (current_x, current_y))  # Draw moving card
             pygame.display.flip()
 
             # Update card position
             current_x += step_x
             current_y += step_y
-
-            # Cap the frame rate
             self.clock.tick(60)
 
-        # Add the card to the player's hand
+        # Add the card to the player's hand after the animation
         new_card = self.deck.draw_card()
         self.player.add_card_to_hand(new_card)
 
@@ -149,45 +138,55 @@ class BlackjackGame:
 
         # Draw the quit button (red X)
         self.draw_quit_button()
-        
+        self.draw_buttons()
         pygame.display.flip()
         
     def draw_quit_button(self):
         # Draw the red 'X' button at the top-right corner
         font = pygame.font.SysFont(None, 60)
         quit_text = font.render('X', True, (255, 0, 0))
-        self.screen.blit(quit_text, (self.quit_button_rect.x + 2, self.quit_button_rect.y - 2))  # Offset for centering
+        self.screen.blit(quit_text, (self.quit_button_rect.x + 2, self.quit_button_rect.y - 2)) 
     
+    def draw_buttons(self):
+        """Draws the Hit and Stand buttons."""
+        if self.buttons_enabled:
+            hit_color = (0, 123, 255)
+            stand_color = (255, 0, 0)
+        else:
+            hit_color = stand_color = (150, 150, 150)
+
+        pygame.draw.rect(self.screen, hit_color, self.hit_button_rect)
+        pygame.draw.rect(self.screen, stand_color, self.stand_button_rect)
+
+        font = pygame.font.Font(None, 36)
+        hit_text = font.render("Hit", True, (255, 255, 255))
+        stand_text = font.render("Stand", True, (255, 255, 255))
+        self.screen.blit(hit_text, (self.hit_button_rect.x + 50, self.hit_button_rect.y + 10))
+        self.screen.blit(stand_text, (self.stand_button_rect.x + 35, self.stand_button_rect.y + 10))
+        
     def reset_game(self):
         """Resets the game state for a new round."""
         self.deck = Deck()
         self.player = Player()
         self.deck.shuffle()
+        self.buttons_enabled = True
+        self.initial_cards_dealt = False
         self.deal_initial_cards()
         self.running = True
     
     def end_game_screen(self, outcome):
-        """Displays the end game screen with the outcome, hand value, and options to play again or exit."""
-        
-        # Create an overlay surface with transparency support
+
         overlay_surface = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
-        
-        # Fill the surface with semi-transparent black color (RGBA: Red, Green, Blue, Alpha)
-        overlay_surface.fill((0, 0, 0, 210))  # RGBA: (0, 0, 0) for black, 120 for semi-transparency
+        overlay_surface.fill((0, 0, 0, 210))
+        self.screen.blit(overlay_surface, (0, 0))
 
-        # Draw the overlay ONCE onto the screen
-        self.screen.blit(overlay_surface, (0, 0))  # Draw the overlay on top of the screen
-
-        # Fonts for text
         font_large = pygame.font.Font(None, 60)
         font_small = pygame.font.Font(None, 36)
 
-        # Outcome text
         outcome_text = font_large.render(outcome, True, (255, 255, 255))
-
-        # Hand validity message
         hand_value = self.player.hand_value()
         print(self.player)
+
         if hand_value > 21:
             validity_message = "Hand is Invalid"
         elif hand_value == 21:
@@ -196,11 +195,8 @@ class BlackjackGame:
             validity_message = "Hand is Valid"
 
         validity_text = font_small.render(validity_message, True, (255, 255, 255))
-
-        # Hand value text (to re-draw it in the top-left corner like during gameplay)
         hand_value_text = font_small.render(f"Hand Value: {hand_value}", True, (255, 255, 255))
 
-        # Buttons for Play Again and Exit
         play_again_button = pygame.Rect((self.screen.get_width() // 2 - 150, 350, 300, 80))
         exit_button = pygame.Rect((self.screen.get_width() // 2 - 150, 450, 300, 80))
 
@@ -208,18 +204,12 @@ class BlackjackGame:
 
         running_end_screen = True
         while running_end_screen:
-            # Draw the hand value in the top-left corner (same as during gameplay)
             self.screen.blit(hand_value_text, (50, 50))
-
-            # Draw the hand validity message above the outcome text
             self.screen.blit(validity_text, ((self.screen.get_width() - validity_text.get_width()) // 2, 150))
-
-            # Draw the outcome message
             self.screen.blit(outcome_text, ((self.screen.get_width() - outcome_text.get_width()) // 2, 200))
 
-            # Draw buttons
-            pygame.draw.rect(self.screen, (0, 255, 0), play_again_button)  # Green button
-            pygame.draw.rect(self.screen, (255, 0, 0), exit_button)        # Red button
+            pygame.draw.rect(self.screen, (0, 255, 0), play_again_button)
+            pygame.draw.rect(self.screen, (255, 0, 0), exit_button)
             play_again_text = button_font.render("Play Again", True, (0, 0, 0))
             exit_text = button_font.render("Exit", True, (0, 0, 0))
             self.screen.blit(play_again_text,
@@ -239,6 +229,7 @@ class BlackjackGame:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
                     if play_again_button.collidepoint(mouse_pos):
+                        self.buttons_enabled = True
                         running_end_screen = False
                         self.reset_game()
                     elif exit_button.collidepoint(mouse_pos):
@@ -248,26 +239,27 @@ class BlackjackGame:
     
 
     def handle_input(self):
+        mouse_pos = None  # Ensure mouse_pos is defined before use
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
 
-            if self.initial_cards_dealt:  # Input only enabled after initial cards are dealt
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_h:  # Hit
-                        self.animate_card_to_player()
-                        if self.player.hand_value() > 21:
-                            self.end_game_screen("Bust! You Lose.")
-                        elif self.player.hand_value() == 21:
-                            self.end_game_screen("Blackjack! You Win!")
-                    elif event.key == pygame.K_s:  # Stand
-                        self.end_game_screen("You Chose to Stand.")
-
-            # Detect mouse clicks for the quit button
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
+
+                if self.buttons_enabled:
+                    if self.hit_button_rect.collidepoint(mouse_pos):
+                        self.buttons_enabled = False
+                        self.animate_card_to_player()
+                        self.buttons_enabled = True
+
+                    elif self.stand_button_rect.collidepoint(mouse_pos):
+                        self.buttons_enabled = False
+                        self.end_game_screen("You Chose to Stand.")
+
                 if self.quit_button_rect.collidepoint(mouse_pos):  # Check if click is inside 'X'
                     self.running = False
+
                     
     def play(self):
         """self.deal_initial_cards()
