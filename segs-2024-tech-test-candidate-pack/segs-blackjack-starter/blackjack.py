@@ -36,6 +36,7 @@ class BlackjackGame:
         self.deck = Deck()
         self.player = Player()
         self.deck.shuffle()
+        self.game_over = False
         
         if num_players != 1:
             self.num_players = num_players
@@ -166,7 +167,8 @@ class BlackjackGame:
             self.clock.tick(60)
 
         # After the flip, check for game-ending conditions for the player
-        self.check_game_end_conditions()
+        if self.num_players == 1:
+            self.check_game_end_conditions()
 
     def check_game_end_conditions(self):
         """Check if the game should end based on the player's hand value."""
@@ -239,6 +241,7 @@ class BlackjackGame:
         self.deck.shuffle()
         self.buttons_enabled = True
         self.initial_cards_dealt = False
+        self.game_over = False
 
         if self.num_players > 1:
             # Reset the hands for all players (including opponents)
@@ -249,9 +252,9 @@ class BlackjackGame:
             # Reset status of opponents (if needed)
             self.opponent_one.status = 'playing'
             self.opponent_two.status = 'playing'
-        else:
-            # For single player, reset just the player's hand
-            self.player.hand.cards = []  # Clear player's hand
+            self.player.status = 'playing'
+            
+            self.turn = "player"
 
         self.deal_initial_cards()  # Deal the initial cards again
         self.running = True
@@ -323,48 +326,6 @@ class BlackjackGame:
                         pygame.quit()
                         exit()
 
-            # Multi-Player Specific End Conditions
-            if self.num_players > 1:
-                # Evaluate the multi-player conditions (one player remaining or blackjack)
-                remaining_players = [self.player] + [self.opponent_one, self.opponent_two]
-                valid_players = [p for p in remaining_players if p.status != 'busted']
-                
-                if len(valid_players) == 1:  # Only one player left
-                    winner = valid_players[0]
-                    if winner == self.player:
-                        outcome_text = font_large.render("You Win!", True, (0, 255, 0))
-                    else:
-                        outcome_text = font_large.render("Opponents Win!", True, (255, 0, 0))
-                    self.buttons_enabled = True
-                    running_end_screen = False
-                    self.reset_game()
-                    
-                elif all(p.status != 'playing' for p in [self.player, self.opponent_one, self.opponent_two]):
-                    # All players have finished playing, check for Blackjack or other conditions
-                    if self.player.hand_value() == 21:
-                        outcome_text = font_large.render("Blackjack! You Win!", True, (0, 255, 0))
-                    elif self.opponent_one.hand_value() == 21:
-                        outcome_text = font_large.render("Opponent 1 Has Blackjack! They Win!", True, (255, 0, 0))
-                    elif self.opponent_two.hand_value() == 21:
-                        outcome_text = font_large.render("Opponent 2 Has Blackjack! They Win!", True, (255, 0, 0))
-                    else:
-                        # Compare hand values if no one has Blackjack
-                        player_score = self.player.hand_value()
-                        opponent_1_score = self.opponent_one.hand_value()
-                        opponent_2_score = self.opponent_two.hand_value()
-
-                        if player_score > opponent_1_score and player_score > opponent_2_score:
-                            outcome_text = font_large.render("You Win!", True, (0, 255, 0))
-                        elif opponent_1_score > player_score and opponent_1_score > opponent_2_score:
-                            outcome_text = font_large.render("Opponent 1 Wins!", True, (255, 0, 0))
-                        elif opponent_2_score > player_score and opponent_2_score > opponent_1_score:
-                            outcome_text = font_large.render("Opponent 2 Wins!", True, (255, 0, 0))
-                        else:
-                            outcome_text = font_large.render("It's a Tie!", True, (255, 255, 0))
-                    
-                    self.buttons_enabled = True
-                    running_end_screen = False
-                    self.reset_game()
     
 
     def handle_input(self):
@@ -385,53 +346,171 @@ class BlackjackGame:
 
                     elif self.stand_button_rect.collidepoint(mouse_pos) and self.turn == 'player' and self.player_status == 'playing':
                         self.buttons_enabled = False
-                        self.end_game_screen("You Chose to Stand.")
-                        self.check_turn_end(self.player)
+                        if self.num_players == 1:
+                            self.end_game_screen("You Chose to Stand.")
+                        else:
+                            self.player.status = 'stood'
+                            self.check_turn_end(self.player)
                         self.buttons_enabled = True
 
             # Quit button
             if self.quit_button_rect.collidepoint(mouse_pos) and event.type == pygame.MOUSEBUTTONDOWN:
                 self.running = False
+    def display_opponent_action(self, opponent, action):
+        """Display the action taken by an opponent (hit or stand)."""
+        # Check opponent and assign a label
+        if opponent == self.opponent_one:
+            opponent_label = "Player 2"
+        elif opponent == self.opponent_two:
+            opponent_label = "Player 3"
+        else:
+            opponent_label = "Unknown Player"  # In case of any issues with identifying opponents
 
-        # If in multi-play mode, handle opponents' turns after player action
-        if self.num_players > 1:
-            if self.turn == 'opponent_one' and self.opponent_one_status == 'playing':
-                self.opponent_turn(self.opponent_one)
-            elif self.turn == 'opponent_two' and self.opponent_two_status == 'playing':
-                self.opponent_turn(self.opponent_two)
-    
+        message = f"{opponent_label} {action}"
+
+        # Create text surface
+        font = pygame.font.SysFont('Arial', 24)
+        text_surface = font.render(message, True, (255, 255, 255))
+        text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, 50))  # Adjust position
+
+        # Display the new message on the screen
+        self.screen.blit(text_surface, text_rect)
+        pygame.display.flip()  # Update the display
+
+        # Wait for 5 seconds to let the player read the message
+        pygame.time.wait(5000)
+
+        # Clear just the message area (fill the rectangle where the message was displayed)
+        self.screen.fill((34, 139, 34), text_rect)  # Clear the area of the message with the background color
+        pygame.display.flip() 
+        
     def opponent_turn(self, opponent):
-        """Simulate the opponent's turn (hit or stand)."""
-        if opponent.status == 'playing':
-            action = random.choice(['hit', 'stand'])  # Random choice for now (50% chance)
-            
-            if action == 'hit':
-                self.animate_card_to_player(opponent)
-                if opponent.hand_value() > 21:  # Check if opponent busts
-                    opponent.status = 'busted'
-                self.check_turn_end(opponent)  # End turn after hit
-            elif action == 'stand':
-                opponent.status = 'stood'
-                self.check_turn_end(opponent)
+        """Handle the opponent's turn, deciding whether to hit or stand."""
+        if opponent.hand_value() < 16:  # Opponents must hit if their hand value is below 16
+            self.animate_card_to_player(opponent)  # Handle card drawing animation
+
+            # Display the action (opponent hit)
+            self.display_opponent_action(opponent, "hit")
+
+            # Check if the opponent busts
+            if opponent.hand_value() > 21:
+                opponent.status = 'busted'  # Mark opponent as busted
+                return  # End the opponent's turn if they bust
+
+        # If the opponent's hand value is >= 16, they must stand
+        elif 16 <= opponent.hand_value() or opponent.hand_value() <= 21:
+            opponent.status = 'stood'
+            self.display_opponent_action(opponent, "stood")
 
     def check_turn_end(self, player):
-        """Check if the current player's turn is over and switch to the next player."""
+        """Check if the current player's turn is over and queue the next player."""
         if player.status == 'stood' or player.hand_value() > 21:
-            # Increment the turns_completed counter
+            # Update player status if needed
+            if player.status == 'playing':
+                player.status = 'stood' if player.hand_value() <= 21 else 'busted'
+
             self.turns_completed += 1
-            
-            # Switch turn to the next player
+        
+        if self.check_valid_players():
+            return
+        
+        self.queue_next_turn()
+
+        # If all players have taken their turn this round, evaluate the game
+        if self.turns_completed % 3 == 0:  # One round complete
+            self.evaluate_game_end()
+
+        # Otherwise, process the next player's turn
+        else:
+            self.process_next_player_turn()
+
+    def queue_next_turn(self):
+        """Queue the next player's turn, skipping players who are not 'playing'."""
+        while True:  # Loop until a valid player is found or the game ends
             if self.turn == 'player':
-                self.turn = 'opponent_one'
+                self.next_turn = 'opponent_one'
             elif self.turn == 'opponent_one':
-                self.turn = 'opponent_two'
+                self.next_turn = 'opponent_two'
             elif self.turn == 'opponent_two':
-                self.turn = 'player'
-            
-            # Check if all turns are complete (if there are 3 players including the player)
-            if self.num_players > 1 and self.turns_completed == 3:
-                   self.end_game_screen("All players have completed their turn.")
-                    
+                self.next_turn = 'player'
+
+            # Check if the next player is valid
+            next_player = self.get_player_by_turn(self.next_turn)
+            if next_player.status == 'playing' and next_player.hand_value() <= 21:
+                break  # Found a valid player
+            else:
+                # Skip to the next turn
+                self.turn = self.next_turn
+
+            # Check if there are no valid players left
+            if all(
+                p.status != 'playing' or p.hand_value() > 21
+                for p in [self.player, self.opponent_one, self.opponent_two]
+            ):
+                # Exit the loop since the game is effectively over
+                return
+
+    def process_next_player_turn(self):
+        """Process the next player's turn if they are still 'playing'."""
+        next_player = self.get_player_by_turn(self.next_turn)
+
+        if next_player == self.player:
+            # Player's turn is handled via input
+            self.turn = self.next_turn
+            return
+
+        # Process opponent's turn
+        if next_player.status == 'playing' and next_player.hand_value() <= 21:
+            self.turn = self.next_turn
+            self.opponent_turn(next_player)
+            self.check_turn_end(next_player)  # Handle opponent's turn end logic
+
+    def evaluate_game_end(self):
+        """Evaluate if the game has ended after all players have completed their turn."""
+        # Check if only one valid player is left
+        valid_players = [
+            p for p in [self.player, self.opponent_one, self.opponent_two]
+            if p.status == 'playing' and p.hand_value() <= 21
+        ]
+
+        if len(valid_players) == 1:
+            winner = valid_players[0]
+            self.end_game_screen(f"{winner.name} wins the game!")
+            self.game_over = True
+            return
+
+        # Check if any player has reached 21
+        for player in [self.player, self.opponent_one, self.opponent_two]:
+            if player.hand_value() == 21:
+                self.end_game_screen(f"{player.name} reached 21!")
+                self.game_over = True
+                return
+
+        # If no winner, continue the game
+        self.game_over = False
+    def check_valid_players(self):
+        """Check if there is only one valid player left."""
+        valid_players = [
+            p for p in [self.player, self.opponent_one, self.opponent_two]
+            if p.status == 'playing' and p.hand_value() <= 21
+        ]
+
+        if len(valid_players) == 1:
+            winner = valid_players[0]
+            self.end_game_screen(f"{winner.name} wins the game!")
+            self.game_over = True
+            return True  # Game is over
+        return False  # Game continues
+
+    def get_player_by_turn(self, turn):
+        """Return the player object corresponding to the given turn."""
+        if turn == 'player':
+            return self.player
+        elif turn == 'opponent_one':
+            return self.opponent_one
+        elif turn == 'opponent_two':
+            return self.opponent_two
+        
     def play(self):
         """self.deal_initial_cards()
         print(self.player)
