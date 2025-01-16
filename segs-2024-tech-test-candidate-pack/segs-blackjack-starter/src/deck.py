@@ -8,7 +8,7 @@ class Deck:
     
     def create_deck(self):
         suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
-        ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
+        ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Queen', 'King', 'Jack', 'Ace']
         cards = [Card(s, r) for s in suits for r in ranks]
         return cards
 
