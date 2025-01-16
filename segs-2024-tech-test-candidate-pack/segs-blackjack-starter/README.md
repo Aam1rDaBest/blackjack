@@ -45,7 +45,7 @@ To start the Blackjack game, run:
 
 A terminal prompt will appear, asking you to choose:
 
-*   **Enter 1** for **Single Player Mode** (play against the dealer).
+*   **Enter 1** for **Single Player Mode** (play on your own).
     
 *   **Enter 3** for **Multi-Player Mode** (play against two AI opponents).
     
@@ -55,11 +55,11 @@ Once selected, a **Pygame window** will open where the game will run.
 **How to Run Unit Tests**
 -------------------------
 
-This project includes unit tests to validate game functionality.To run the tests, use:
+This project includes unit tests to validate game functionality. However, due to the implementation of a graphical component, it was difficult to ensure that all aspects of the system were tested. To run the tests, use this within `segs-blackjack-stater`:
 
 `python -m unittest test.test_deck`
 
-This ensures the **Deck class** and related components work correctly.
+This ensures the files within **src** and related components work correctly.
 
 
 **Game Rules**
