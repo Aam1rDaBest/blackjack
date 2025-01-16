@@ -404,7 +404,6 @@ class BlackjackGame:
                         pygame.quit()
                         exit()
 
-    
 
     def handle_input(self):
         """Handles user input, including mouse events for player actions like hitting, standing, and quitting."""
@@ -424,9 +423,11 @@ class BlackjackGame:
                     if self.hit_button_rect.collidepoint(mouse_pos) and self.turn == 'player' and self.player_status == 'playing':
                         self.buttons_enabled = False
                         self.animate_card_to_player(self.player)
-                        
                         # Events based on no. of players
                         if self.num_players == 1:
+                            hand_value = self.player.hand_value()
+                            if hand_value > 21:
+                                self.player.status = 'bust'
                             self.evaluate_game_end()
                         else:
                             self.check_turn_end(self.player)
@@ -438,6 +439,7 @@ class BlackjackGame:
                         
                         # Events based on no. of players
                         if self.num_players == 1:
+                            self.player.status = 'stood'
                             self.end_game_screen("You Chose to Stand.")
                         else:
                             self.player.status = 'stood'
@@ -735,5 +737,16 @@ class BlackjackGame:
         pygame.quit()
 
 if __name__ == '__main__':
-    initial = BlackjackGame(3)
-    initial.play()
+    while True:
+        try:
+            num_players = int(input("Enter 1 for Single Player or 3 for Multi Player: "))
+            if num_players in [1, 3]:
+                break
+            else:
+                print("Invalid input. Please enter 1 or 3.")
+        except ValueError:
+            print("Invalid input. Please enter a number (1 or 3).")
+
+    game = BlackjackGame(num_players)
+    game.play()
+    
