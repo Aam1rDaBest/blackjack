@@ -387,6 +387,7 @@ class BlackjackGame:
     
 
     def handle_input(self):
+        """Handles user input, including mouse events for player actions like hitting, standing, and quitting."""
         mouse_pos = pygame.mouse.get_pos()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -417,6 +418,7 @@ class BlackjackGame:
             # Quit button
             if self.quit_button_rect.collidepoint(mouse_pos) and event.type == pygame.MOUSEBUTTONDOWN:
                 self.running = False
+                
     def display_opponent_action(self, opponent, action):
         """Display the action taken by an opponent (hit or stand)."""
         # Check opponent and assign a label
@@ -519,6 +521,7 @@ class BlackjackGame:
         elif hand_value >= 20:
             opponent.status = 'stood'
             self.display_opponent_action(opponent, "stood")
+            
     def check_turn_end(self, player):
         """Check if the current player's turn is over and queue the next player."""
         if player.status == 'stood' or player.hand_value() > 21:
@@ -666,50 +669,16 @@ class BlackjackGame:
             return self.opponent_two
         
     def play(self):
-        """self.deal_initial_cards()
-        print(self.player)
-        while self.player.hand_value() < 21:
-            action = input(f"Do you want to hit (h) or stand (s)? ")
-            if action.lower() == 'h':
-                self.player.add_card_to_hand(self.deck.draw_card())
-                print(self.player)
-            elif action.lower() == 's':
-                print("Final",self.player)
-                print("Game Over")
-                break
-            else:
-                print("Invalid Response")
-                print("Game Over")
-                break
-
-        self.determine_winner()"""
         self.deal_initial_cards()
         while self.running:
             self.handle_input()
 
-            """# Game logic based on player action
-            if self.action == 'h':
-                try:
-                    self.player.add_card_to_hand(self.deck.draw_card())
-                    self.action = None
-                except ValueError:
-                    print("Deck is empty!")
-                    self.running = False
-            """
             # Render the screen
             self.draw_screen()
             self.clock.tick(30)  # 30 FPS
         
         #self.determine_winner()
         pygame.quit()
-
-    def determine_winner(self):
-        player_value = self.player.hand_value()
-        if player_value > 21:
-            print(f"Bust!")
-        elif player_value == 21:
-            print(f"Winner!")
-
 
 if __name__ == '__main__':
     initial = BlackjackGame(3)
