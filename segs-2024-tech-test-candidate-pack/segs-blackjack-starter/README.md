@@ -1,59 +1,76 @@
-## Blackjack Tech Test - Starter Code
+**Blackjack (Pygame Implementation)**
+=====================================
 
-This code is offered as a potential starting point for completing the BBC Software Engineering Graduate Scheme tech test.
-You do **not** have to use this starter code.
+**Overview**
+------------
 
+This is a **Blackjack game** built using **Pygame**, where you can play in either **single-player mode** or **multi-player mode** against two AI-controlled opponents.
 
-### Getting started
+**Installation Requirements**
+-----------------------------
 
-- Ensure you can run the provided code. 
-    - If you have Python 3 installed:
-        - Open a terminal window and navigate to the folder containing this `README.md`.
-        - Type `python3 blackjack.py`
-        - Look for a welcome message in the console.
-    - If that doesn't work, check your setup and download Python 3 if needed:
-        - https://wiki.python.org/moin/BeginnersGuide/Download
-- Ensure you can run the unit tests.
-    - From the same terminal window, type `python3 -m unittest discover test`.
-    - Python should find and run the one provided failing test, with the message `AssertionError: 0 != 52`
+To run this game, you need **Python** installed on your system, along with the required dependencies. The project was developed using the following Python packages in a virtual environment:
+
+### **Required Packages:**
+
+*   pygame==2.6.1 _(for graphical interface and animations)_
+    
+*   pytest==8.3.4 _(for running unit tests)_
     
 
-### Adding to the starter code
+Other dependencies included in the virtual environment:
 
-- A great place to start is by making the provided unit test pass.
-    - The provided Deck class has an empty array, `self.cards`.
-    - The test will pass if `self.cards` on line 3 of `deck.py` contains 52 things.
-    - once this test passes, extend the test or add more tests.
-    - e.g. the first test only ensures a Deck has 52 of _something_- what else might you want to test?
-- A TDD (test-driven development) approach can be useful:
-    - write a failing test that describes what you want your code to do
-        - e.g. 'a deck should have 4 aces'
-    - modify the code that you're testing so that the test passes
-        - e.g. the deck actually *has* 4 aces!
-    - each of the scenarios in the brief can be turned into a single test
-- You can add more test files:
-    - keep them in the `test/` directory
-    - make sure they have filenames beginning with `test`
-    - make sure test methods within those files also begin with `test`
-- You can add more source files:
-    - keep them in the `src/` directory
-- You can use any approach you want
-    - The provided code hints at an object-oriented approach (since we have a Deck class)
-    - if you wanted to extend this approach, you might want to create classes for Hand, Card, Dealer, etc.
+*   exceptiongroup==1.2.2
+    
+*   iniconfig==2.0.0
+    
+*   packaging==24.2
+    
+*   pip==22.0.2
+    
+*   pluggy==1.5.0
+    
+*   setuptools==59.6.0
+    
+*   tomli==2.2.1
+    
 
 
-### Disregarding the starter code
+**How to Run the Game**
+-----------------------
 
-- As stated above you, can use any language or framework you prefer to solve this challenge.
-- If you prefer not to use the starter code, let us know in your submission how to run it.
-  
-  
-### Completing the task
+To start the Blackjack game, run:
 
-- Remember, the task is to write code that accurately scores a hand of blackjack, *not* to make a whole game
-- This means you *don't* need to have a running program to complete this test
-    - You can just prove your code works with unit tests
-    - You *don't* need to add anything to `blackjack.py` to do this.
-- You can *choose* to make a running program that demonstrates that your code works
-    - If you want to do this, you can extend the `play` method of `blackjack.py`
-    - This method is the entry point when you do `python3 blackjack.py`.
+`blackjack.py`
+
+A terminal prompt will appear, asking you to choose:
+
+*   **Enter 1** for **Single Player Mode** (play against the dealer).
+    
+*   **Enter 3** for **Multi-Player Mode** (play against two AI opponents).
+    
+
+Once selected, a **Pygame window** will open where the game will run.
+
+**How to Run Unit Tests**
+-------------------------
+
+This project includes unit tests to validate game functionality.To run the tests, use:
+
+`python -m unittest test.test_deck`
+
+This ensures the **Deck class** and related components work correctly.
+
+
+**Game Rules**
+--------------
+
+*   Each player starts with **two cards**.
+    
+*   Players can **Hit** (draw a card) or **Stand** (keep their current hand).
+    
+*   If a player's hand value exceeds **21**, they **bust** and lose.
+    
+*   If multiple players have the same highest score, it's a **tie**.
+    
+*   The AI follows probability-based decisions when hitting or standing.
