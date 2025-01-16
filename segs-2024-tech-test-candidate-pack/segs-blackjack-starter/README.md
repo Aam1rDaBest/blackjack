@@ -55,11 +55,11 @@ Once selected, a **Pygame window** will open where the game will run.
 **How to Run Unit Tests**
 -------------------------
 
-This project includes unit tests to validate game functionality.To run the tests, use:
+This project includes unit tests to validate game functionality.To run the tests, use this within `segs-blackjack-stater`:
 
 `python -m unittest test.test_deck`
 
-This ensures the **Deck class** and related components work correctly.
+This ensures the files within **src** and related components work correctly.
 
 
 **Game Rules**
