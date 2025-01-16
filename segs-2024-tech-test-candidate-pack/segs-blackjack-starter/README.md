@@ -45,7 +45,7 @@ To start the Blackjack game, run:
 
 A terminal prompt will appear, asking you to choose:
 
-*   **Enter 1** for **Single Player Mode** (play against the dealer).
+*   **Enter 1** for **Single Player Mode** (play on your own).
     
 *   **Enter 3** for **Multi-Player Mode** (play against two AI opponents).
     
