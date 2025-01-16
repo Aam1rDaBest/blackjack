@@ -26,14 +26,14 @@ class TestBlackjackSingleGame(unittest.TestCase):
         initial_deck_size = len(self.game.deck.cards)  # Capture initial deck size
         self.game.deal_initial_cards()  # Deal the initial cards
 
-        # 1. Check the player's hand contains exactly 2 cards
+        # Check the player's hand contains exactly 2 cards
         self.assertEqual(len(self.game.player.hand.cards), 2, "Player should have exactly 2 cards after dealing.")
 
-        # 2. Check that the deck size decreased by 2
+        # Check that the deck size decreased by 2
         expected_deck_size = initial_deck_size - 2
         self.assertEqual(len(self.game.deck.cards), expected_deck_size, "Deck should have 2 fewer cards after dealing.")
 
-        # 3. Check that both cards in the hand are valid Card objects
+        # Check that both cards in the hand are valid Card objects
         for card in self.game.player.hand.cards:
             self.assertIsInstance(card, Card, "Each card in the player's hand should be a valid Card object.")
             
@@ -85,7 +85,7 @@ class TestBlackjackSingleGame(unittest.TestCase):
         else:
             self.assertTrue(self.game.player.status == 'stood', "Player should be in 'stood' state.")
 
-    @patch.object(BlackjackGame, 'animate_card_to_player', lambda self, player: None)  # Skip card animation
+    @patch.object(BlackjackGame, 'animate_card_to_player', lambda self, player: None)
     def test_quit_button(self):
         """Test that clicking the quit button ends the game."""
         self.game.running = False  # Set the game running state to False, simulating quit behavior
@@ -93,7 +93,7 @@ class TestBlackjackSingleGame(unittest.TestCase):
         # Ensure that the game is no longer running (quit state)
         self.assertFalse(self.game.running, "The game should stop running after the quit button is clicked.")
     
-    @patch.object(BlackjackGame, 'animate_card_to_player', lambda self, player: None)  # Skip animation
+    @patch.object(BlackjackGame, 'animate_card_to_player', lambda self, player: None)
     def test_bust_end_game(self):
         """Test that the game ends with 'Bust! You Lose.' when the player's hand value exceeds 21."""
         
@@ -114,7 +114,7 @@ class TestBlackjackSingleGame(unittest.TestCase):
         self.assertEqual(self.game.player.status, 'busted', "Player should be in 'busted' state.")
         self.assertEqual(outcome, "Bust! You Lose.", "Game should display 'Bust! You Lose.' when player exceeds 21.")
 
-    @patch.object(BlackjackGame, 'animate_card_to_player', lambda self, player: None)  # Skip animation
+    @patch.object(BlackjackGame, 'animate_card_to_player', lambda self, player: None) 
     def test_blackjack_end_game(self):
         """Test that the game ends with 'Blackjack! You Win.' when the player's hand value equals 21."""
         
@@ -134,7 +134,7 @@ class TestBlackjackSingleGame(unittest.TestCase):
         self.assertEqual(self.game.player.status, 'blackjack', "Player should be in 'blackjack' state.")
         self.assertEqual(outcome, "Blackjack! You Win.", "Game should display 'Blackjack! You Win.' when player has 21.")
 
-    @patch.object(BlackjackGame, 'animate_card_to_player', lambda self, player: None)  # Skip animation
+    @patch.object(BlackjackGame, 'animate_card_to_player', lambda self, player: None) 
     def test_stand_end_game(self):
         """Test that the game correctly recognizes a player standing and does not change hand value."""
         
@@ -266,7 +266,7 @@ class TestBlackjackMultiGame(unittest.TestCase):
         self.game.running = False  # Set the game running state to False, simulating quit behavior
         self.assertFalse(self.game.running, "The game should stop running after the quit button is clicked.")
 
-    @patch.object(BlackjackGame, 'animate_card_to_player', lambda self, player: player.hand.add_card(self.deck.draw_card()))  # Ensure card is actually added
+    @patch.object(BlackjackGame, 'animate_card_to_player', lambda self, player: player.hand.add_card(self.deck.draw_card())) 
     @patch('random.randint', return_value=1) 
     def test_opponent_turn(self, mock_randint):
         """Test opponent decisions (hit or stand) without calling opponent_turn directly."""
